@@ -1,0 +1,274 @@
+/* Site público da clínica. A cor da marca vem do cadastro (--marca). */
+:root {
+  --marca: #0d9488;
+  --marca-suave: color-mix(in srgb, var(--marca) 10%, #fff);
+  --marca-escura: color-mix(in srgb, var(--marca) 80%, #000);
+  --borda: #e5e9ee;
+  --bs-body-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #fff;
+  color: #1f2933;
+}
+
+a { color: var(--marca-escura); }
+.cor-marca { color: var(--marca); }
+
+.btn-marca {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--marca);
+  --bs-btn-border-color: var(--marca);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--marca-escura);
+  --bs-btn-hover-border-color: var(--marca-escura);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--marca-escura);
+  --bs-btn-disabled-bg: var(--marca);
+  --bs-btn-disabled-border-color: var(--marca);
+  --bs-btn-disabled-color: #fff;
+  font-weight: 600;
+}
+
+:focus-visible {
+  outline: 3px solid var(--marca);
+  outline-offset: 2px;
+}
+
+/* Topo */
+.topo {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--borda);
+}
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  color: #111827;
+  text-decoration: none;
+}
+.marca-icone {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--marca);
+  color: #fff;
+  font-size: 0.8rem;
+}
+.links a {
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+}
+.links a:hover { color: var(--marca-escura); }
+
+/* Hero */
+.hero {
+  background: radial-gradient(1200px 400px at 10% 0%, var(--marca-suave), transparent 70%);
+}
+.selo {
+  display: inline-block;
+  background: var(--marca-suave);
+  color: var(--marca-escura);
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+.hero-cartao {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 40px -24px rgba(15, 23, 42, 0.25);
+}
+.hero-icone {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--marca-suave);
+  color: var(--marca-escura);
+  font-size: 1.2rem;
+}
+
+/* Seções */
+section[id] { scroll-margin-top: 70px; }
+.secao-alt { background: #f7f9fb; }
+.secao-titulo {
+  font-weight: 800;
+  font-size: 1.6rem;
+  margin-bottom: 1.5rem;
+}
+.cartao {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  padding: 18px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--marca-suave);
+  color: var(--marca-escura);
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+.avatar-sm {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  font-size: 0.9rem;
+}
+
+/* Agendador */
+.agendador {
+  max-width: 640px;
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 40px -28px rgba(15, 23, 42, 0.3);
+}
+.passos {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  counter-reset: passo;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+.passos li {
+  flex: 1;
+  counter-increment: passo;
+  border-top: 3px solid var(--borda);
+  padding-top: 6px;
+}
+.passos li::before { content: counter(passo) ". "; }
+.passos li.ativo { border-color: var(--marca); color: #111827; font-weight: 700; }
+.passos li.feito { border-color: color-mix(in srgb, var(--marca) 45%, #fff); }
+
+.opcoes {
+  display: grid;
+  gap: 8px;
+}
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.opcao:hover {
+  border-color: var(--marca);
+  background: var(--marca-suave);
+}
+
+.dias {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x proximity;
+}
+.dia {
+  flex: none;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64px;
+  padding: 8px 0;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  background: #fff;
+  line-height: 1.2;
+}
+.dia strong { font-size: 1.2rem; }
+.dia:hover { border-color: var(--marca); }
+.dia.selecionado {
+  background: var(--marca);
+  border-color: var(--marca);
+  color: #fff;
+}
+
+.horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+}
+.horario {
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px 0;
+  font-weight: 600;
+}
+.horario:hover {
+  border-color: var(--marca);
+  background: var(--marca-suave);
+}
+
+.resumo-escolha {
+  background: var(--marca-suave);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.sucesso-icone {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--marca);
+  color: #fff;
+  font-size: 2.2rem;
+}
+
+/* WhatsApp flutuante */
+.whatsapp-flutuante {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1030;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  font-size: 1.6rem;
+  box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.35);
+}
+.whatsapp-flutuante.d-none { display: none !important; }
+.whatsapp-flutuante:hover { color: #fff; background: #1ebe5b; }
+
+@media (max-width: 575.98px) {
+  .agendador { padding: 16px; border-radius: 16px; }
+  .passos { font-size: 0.7rem; }
+}
+
+.btn-link {
+  --bs-btn-color: var(--marca-escura);
+  --bs-btn-hover-color: var(--marca);
+}

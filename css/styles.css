@@ -1,0 +1,322 @@
+/* Clínica SaaS — ajustes sobre o Bootstrap 5.3 (tema claro por padrão, escuro opcional) */
+
+:root,
+[data-bs-theme="light"] {
+  --app-fundo: #f4f6f8;
+  --app-superficie: #ffffff;
+  --app-borda: #dde2e8;
+  --app-fora-expediente: #eef1f4;
+  --agenda-linha: 48px; /* manter igual a ALTURA_LINHA em js/agenda.js */
+  --bs-primary: #0d9488;
+  --bs-primary-rgb: 13, 148, 136;
+  --bs-link-color: #0f766e;
+  --bs-link-color-rgb: 15, 118, 110;
+}
+
+[data-bs-theme="dark"] {
+  --app-fundo: #0e1116;
+  --app-superficie: #171b22;
+  --app-borda: #2a303a;
+  --app-fora-expediente: #12161c;
+  --bs-primary: #14b8a6;
+  --bs-primary-rgb: 20, 184, 166;
+  --bs-link-color: #2dd4bf;
+  --bs-link-color-rgb: 45, 212, 191;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 85%, #000);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 85%, #000);
+  --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 75%, #000);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 75%, #000);
+  --bs-btn-disabled-bg: var(--bs-primary);
+  --bs-btn-disabled-border-color: var(--bs-primary);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--bs-primary);
+  --bs-btn-border-color: var(--bs-primary);
+  --bs-btn-hover-bg: var(--bs-primary);
+  --bs-btn-hover-border-color: var(--bs-primary);
+  --bs-btn-active-bg: var(--bs-primary);
+  --bs-btn-active-border-color: var(--bs-primary);
+}
+.text-primary { color: var(--bs-primary) !important; }
+
+body {
+  background: var(--app-fundo);
+}
+
+.barra-topo {
+  background: var(--app-superficie);
+  border-color: var(--app-borda) !important;
+}
+
+.card {
+  border-color: var(--app-borda);
+}
+
+:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  outline: 3px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.form-text {
+  font-size: 0.8rem;
+}
+
+.login-card {
+  max-width: 400px;
+}
+
+.onboarding-card {
+  max-width: 520px;
+}
+
+/* ---------------------------------------------------------------------
+   Menu
+   --------------------------------------------------------------------- */
+.menu-principal {
+  gap: 2px;
+  overflow-x: auto;
+}
+.menu-principal .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+.menu-principal .nav-link.active {
+  background: color-mix(in srgb, var(--bs-primary) 14%, transparent);
+  color: var(--bs-primary);
+  font-weight: 600;
+}
+@media (max-width: 767.98px) {
+  .menu-principal .nav-link span { display: none; }
+}
+
+/* ---------------------------------------------------------------------
+   Busca e listas
+   --------------------------------------------------------------------- */
+.filtro-busca {
+  position: relative;
+  min-width: 240px;
+}
+.filtro-busca .bi-search {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+}
+.filtro-busca input {
+  padding-left: 30px;
+}
+
+.linha-clicavel {
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------
+   Agenda do dia
+   --------------------------------------------------------------------- */
+.ag-data { width: auto; }
+.ag-filtro { width: auto; min-width: 200px; }
+
+.agenda-wrap {
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borda);
+  border-radius: 12px;
+  overflow: auto;
+  max-height: calc(100vh - 180px);
+}
+
+.agenda {
+  display: grid;
+  grid-template-columns: 56px repeat(var(--cols), minmax(170px, 1fr));
+  min-width: min-content;
+}
+
+.agenda-canto,
+.agenda-cab {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--app-superficie);
+  border-bottom: 1px solid var(--app-borda);
+  padding: 8px 10px;
+}
+.agenda-canto {
+  left: 0;
+  z-index: 4;
+}
+.agenda-cab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-left: 1px solid var(--app-borda);
+  min-width: 0;
+}
+
+.agenda-bolinha {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--prof);
+}
+
+.agenda-horas {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--app-superficie);
+}
+.agenda-hora {
+  height: var(--agenda-linha);
+  font-size: 0.72rem;
+  color: var(--bs-secondary-color);
+  text-align: right;
+  padding: 0 8px;
+  transform: translateY(-0.6em);
+}
+
+.agenda-col {
+  position: relative;
+  border-left: 1px solid var(--app-borda);
+}
+
+.agenda-slot {
+  display: block;
+  width: 100%;
+  height: var(--agenda-linha);
+  border: 0;
+  border-top: 1px solid var(--app-borda);
+  background: transparent;
+  padding: 0;
+}
+.agenda-slot:nth-child(even) {
+  border-top-style: dashed;
+}
+.agenda-slot.fora {
+  background: var(--app-fora-expediente);
+}
+.agenda-slot:hover {
+  background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+}
+
+.agenda-item,
+.agenda-bloqueio {
+  position: absolute;
+  margin: 1px 2px;
+  border-radius: 8px;
+  text-align: left;
+  overflow: hidden;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  padding: 3px 7px;
+}
+
+.agenda-item {
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--prof) 45%, transparent);
+  border-left: 4px solid var(--prof);
+  background: color-mix(in srgb, var(--prof) 16%, var(--app-superficie));
+  color: var(--bs-body-color);
+  display: flex;
+  flex-direction: column;
+}
+.agenda-item:hover {
+  background: color-mix(in srgb, var(--prof) 26%, var(--app-superficie));
+}
+.agenda-item-hora {
+  font-weight: 700;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.agenda-item-nome {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agenda-item-serv {
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agenda-item.status-cancelado {
+  opacity: 0.45;
+  text-decoration: line-through;
+  z-index: 0;
+}
+.agenda-item.status-faltou {
+  border-left-color: var(--bs-warning);
+}
+.agenda-item.status-atendido {
+  opacity: 0.75;
+}
+
+.agenda-bloqueio {
+  left: 0;
+  right: 0;
+  z-index: 0;
+  border: 1px dashed var(--app-borda);
+  color: var(--bs-secondary-color);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--app-fora-expediente),
+    var(--app-fora-expediente) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* Busca de paciente no modal de agendamento */
+.agd-resultados {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* Grade semanal do profissional */
+.grade-semanal input[type="time"] {
+  min-width: 100px;
+}
+.servicos-check {
+  columns: 2 220px;
+}
+
+.estado-vazio .bi {
+  color: var(--bs-secondary-color);
+}
+
+/* Atendimento curto (até uma linha da grade): hora e nome na mesma linha */
+.agenda-item.curto {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+.agenda-item.curto .agenda-item-serv {
+  display: none;
+}
+.agenda-horas .agenda-hora:first-child {
+  transform: none;
+}
+
+.form-check-input:checked {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
