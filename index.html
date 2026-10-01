@@ -51,7 +51,9 @@
         console.error(erro);
         const el = document.getElementById('login-erro');
         el.innerHTML = 'Não foi possível iniciar. Verifique se o arquivo <code>js/config.js</code> existe ' +
-          '(copie de <code>js/config.example.js</code>) e se você está usando um servidor local (ex.: Live Server).';
+          '(copie de <code>js/config.example.js</code>) e se você está usando um servidor local (ex.: Live Server).' +
+          '<div class="small mt-2 font-monospace"></div>';
+        el.querySelector('.font-monospace').textContent = `Detalhe: ${erro?.message ?? erro}`;
         el.classList.remove('d-none');
       });
   </script>
