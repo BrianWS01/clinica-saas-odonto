@@ -162,7 +162,7 @@ async function excluirServico() {
     await recarregarCadastros();
   } catch (erro) {
     toast(erro?.code === '23503'
-      ? 'Esse serviço já foi usado em agendamentos. Desmarque "Ativo" em vez de excluir.'
+      ? 'Esse serviço já foi usado em agendamentos ou orçamentos. Desmarque "Ativo" em vez de excluir.'
       : mensagemDeErro(erro, 'Excluir serviço'), 'erro');
   }
 }

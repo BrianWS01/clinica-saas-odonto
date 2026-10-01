@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Orçamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body class="orc-publico">
+  <main class="container py-4" style="max-width: 760px">
+    <div id="carregando" class="text-center text-body-secondary py-5">
+      <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Carregando orçamento...
+    </div>
+
+    <div id="erro" class="text-center py-5 d-none">
+      <i class="bi bi-file-earmark-x fs-1 text-body-secondary" aria-hidden="true"></i>
+      <p class="fs-5 fw-semibold mt-2 mb-1">Orçamento não encontrado</p>
+      <p class="text-body-secondary">O link pode estar incompleto ou o orçamento foi removido. Fale com a clínica.</p>
+    </div>
+
+    <article id="orcamento" class="agendador mx-auto d-none">
+      <header class="d-flex align-items-center gap-3 mb-4">
+        <span class="marca-icone fs-6" id="clinica-iniciais"></span>
+        <div class="me-auto">
+          <div class="fw-bold" id="clinica-nome"></div>
+          <div class="small text-body-secondary" id="clinica-local"></div>
+        </div>
+        <span class="badge rounded-pill" id="status"></span>
+      </header>
+
+      <h1 class="h4 fw-bold mb-1">Orçamento</h1>
+      <p class="text-body-secondary mb-4" id="subtitulo"></p>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr><th scope="col">Procedimento</th><th scope="col" class="text-center">Qtd.</th><th scope="col" class="text-end">Valor</th></tr>
+          </thead>
+          <tbody id="itens"></tbody>
+          <tfoot id="totais"></tfoot>
+        </table>
+      </div>
+
+      <dl class="row small mb-4" id="detalhes"></dl>
+
+      <div id="resposta" class="d-print-none"></div>
+
+      <div class="d-flex flex-wrap gap-2 mt-4 d-print-none">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+          <i class="bi bi-printer me-1" aria-hidden="true"></i>Imprimir / salvar PDF
+        </button>
+        <a class="btn btn-outline-success btn-sm d-none" id="falar" target="_blank" rel="noopener">
+          <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Tirar dúvidas
+        </a>
+      </div>
+    </article>
+
+    <p class="text-center small text-body-secondary mt-4 d-print-none">Site e sistema por WoodTec</p>
+  </main>
+
+  <script type="module" src="orcamento.js"></script>
+</body>
+</html>

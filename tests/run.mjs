@@ -3,6 +3,7 @@ import { rodar } from './harness.js';
 import './validators.test.js';
 import './agenda-regras.test.js';
 import './site-regras.test.js';
+import './odonto-regras.test.js';
 
 const resultados = await rodar();
 const falhas = resultados.filter((r) => !r.ok);

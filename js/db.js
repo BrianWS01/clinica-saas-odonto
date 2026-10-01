@@ -177,3 +177,92 @@ export async function salvarBloqueio(clinicaId, dados) {
 export async function excluirBloqueio(clinicaId, id) {
   checar(await supabase.from('bloqueios').delete().eq('id', id).eq('clinica_id', clinicaId));
 }
+
+export async function pacientePorId(clinicaId, id) {
+  return checar(await supabase.from('pacientes').select('*').eq('clinica_id', clinicaId).eq('id', id).maybeSingle());
+}
+
+// ---------------------------------------------------------------------
+// Odontograma
+// ---------------------------------------------------------------------
+
+export async function listarMarcacoes(clinicaId, pacienteId) {
+  return checar(await supabase
+    .from('odontograma_marcacoes')
+    .select('*')
+    .eq('clinica_id', clinicaId)
+    .eq('paciente_id', pacienteId)
+    .order('criado_em'));
+}
+
+export async function criarMarcacao(clinicaId, pacienteId, dados) {
+  return checar(await supabase
+    .from('odontograma_marcacoes')
+    .insert({ ...dados, clinica_id: clinicaId, paciente_id: pacienteId })
+    .select()
+    .single());
+}
+
+export async function excluirMarcacao(clinicaId, id) {
+  checar(await supabase.from('odontograma_marcacoes').delete().eq('id', id).eq('clinica_id', clinicaId));
+}
+
+// ---------------------------------------------------------------------
+// Orçamentos
+// ---------------------------------------------------------------------
+
+export async function listarOrcamentos(clinicaId, pacienteId) {
+  const lista = checar(await supabase
+    .from('orcamentos')
+    .select('*, itens:orcamento_itens(*)')
+    .eq('clinica_id', clinicaId)
+    .eq('paciente_id', pacienteId)
+    .order('criado_em', { ascending: false }));
+  for (const o of lista) o.itens.sort((a, b) => a.ordem - b.ordem || a.criado_em.localeCompare(b.criado_em));
+  return lista;
+}
+
+/**
+ * Grava o cabeçalho e substitui os itens (só para rascunho/enviado).
+ * Sem transação no cliente: se a troca de itens falhar, o erro aparece e o usuário salva de novo.
+ */
+export async function salvarOrcamento(clinicaId, pacienteId, id, cabecalho, itens) {
+  const q = id
+    ? supabase.from('orcamentos').update(cabecalho).eq('id', id).eq('clinica_id', clinicaId)
+    : supabase.from('orcamentos').insert({ ...cabecalho, clinica_id: clinicaId, paciente_id: pacienteId });
+  const salvo = checar(await q.select().single());
+
+  checar(await supabase.from('orcamento_itens').delete().eq('orcamento_id', salvo.id).eq('clinica_id', clinicaId));
+  if (itens.length) {
+    checar(await supabase.from('orcamento_itens').insert(
+      itens.map((i, ordem) => ({ ...i, ordem, clinica_id: clinicaId, orcamento_id: salvo.id }))));
+  }
+  return salvo;
+}
+
+export async function atualizarOrcamento(clinicaId, id, dados) {
+  return checar(await supabase.from('orcamentos').update(dados).eq('id', id).eq('clinica_id', clinicaId).select().single());
+}
+
+export async function excluirOrcamento(clinicaId, id) {
+  checar(await supabase.from('orcamentos').delete().eq('id', id).eq('clinica_id', clinicaId));
+}
+
+/** Acrescenta um item no fim de um orçamento existente. */
+export async function adicionarItemOrcamento(clinicaId, orcamentoId, item, ordem) {
+  return checar(await supabase
+    .from('orcamento_itens')
+    .insert({ ...item, ordem, clinica_id: clinicaId, orcamento_id: orcamentoId })
+    .select()
+    .single());
+}
+
+export async function marcarItem(clinicaId, itemId, concluido) {
+  return checar(await supabase
+    .from('orcamento_itens')
+    .update({ status: concluido ? 'concluido' : 'pendente', concluido_em: concluido ? new Date().toISOString() : null })
+    .eq('id', itemId)
+    .eq('clinica_id', clinicaId)
+    .select()
+    .single());
+}

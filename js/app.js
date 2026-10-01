@@ -10,6 +10,7 @@ import { iniciarAgenda, mostrarAgenda } from './agenda.js';
 import { iniciarPacientes, mostrarPacientes } from './pacientes.js';
 import { iniciarCadastros } from './cadastros.js';
 import { iniciarConfigClinica, mostrarConfigClinica } from './config-clinica.js';
+import { iniciarProntuario, abrirProntuario } from './prontuario.js';
 
 const CHAVE_TEMA = 'clinica-tema';
 const CHAVE_CLINICA = 'clinica-atual';
@@ -59,6 +60,7 @@ async function entrarNaClinica(clinica, papel) {
   iniciarPacientes();
   iniciarCadastros();
   iniciarConfigClinica();
+  iniciarProntuario();
 
   document.getElementById('menu').classList.remove('d-none');
   window.addEventListener('hashchange', rotear);
@@ -72,15 +74,27 @@ async function entrarNaClinica(clinica, papel) {
 }
 
 function rotear() {
-  const view = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'agenda';
+  const rota = location.hash.slice(1);
+  const ficha = rota.match(/^paciente\/([0-9a-f-]{36})$/i);
+  if (ficha) {
+    mostrarView('prontuario');
+    marcarMenu('pacientes');
+    abrirProntuario(ficha[1]);
+    return;
+  }
+  const view = VIEWS.includes(rota) ? rota : 'agenda';
   mostrarView(view);
+  marcarMenu(view);
+  aoMostrar[view]?.();
+}
+
+function marcarMenu(view) {
   document.querySelectorAll('#menu .nav-link').forEach((a) => {
     const ativo = a.dataset.view === view;
     a.classList.toggle('active', ativo);
     if (ativo) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
-  aoMostrar[view]?.();
 }
 
 function mostrarView(nome) {

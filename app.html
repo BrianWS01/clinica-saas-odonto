@@ -112,6 +112,84 @@
       <div id="pac-lista"></div>
     </section>
 
+    <!-- ========================= FICHA DO PACIENTE ======================== -->
+    <section id="view-prontuario" class="view d-none">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <a href="#pacientes" class="btn btn-sm btn-outline-secondary" title="Voltar para pacientes" aria-label="Voltar para pacientes">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </a>
+        <div class="me-auto">
+          <h1 class="h4 fw-bold mb-0" id="pront-nome"></h1>
+          <div class="small text-body-secondary" id="pront-info"></div>
+        </div>
+        <a class="btn btn-sm btn-outline-success d-none" id="pront-whatsapp" target="_blank" rel="noopener">
+          <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>WhatsApp
+        </a>
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="pront-editar">
+          <i class="bi bi-pencil me-1" aria-hidden="true"></i>Dados
+        </button>
+      </div>
+
+      <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item" role="presentation" id="aba-odonto-item">
+          <button class="nav-link" id="aba-odonto" data-bs-toggle="tab" data-bs-target="#painel-odonto" type="button" role="tab" aria-controls="painel-odonto">
+            <i class="bi bi-grid-3x2-gap me-1" aria-hidden="true"></i>Odontograma
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="aba-orcamentos" data-bs-toggle="tab" data-bs-target="#painel-orcamentos" type="button" role="tab" aria-controls="painel-orcamentos">
+            <i class="bi bi-receipt me-1" aria-hidden="true"></i>Orçamentos e tratamento <span class="badge text-bg-secondary ms-1 d-none" id="orc-contador"></span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="aba-historico" data-bs-toggle="tab" data-bs-target="#painel-historico" type="button" role="tab" aria-controls="painel-historico">
+            <i class="bi bi-clock-history me-1" aria-hidden="true"></i>Atendimentos
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane fade" id="painel-odonto" role="tabpanel" aria-labelledby="aba-odonto" tabindex="0">
+          <div class="row g-3">
+            <div class="col-xl-8">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Dentição">
+                      <input type="radio" class="btn-check" name="denticao" id="dent-perm" value="permanentes" checked>
+                      <label class="btn btn-outline-secondary" for="dent-perm">Permanentes</label>
+                      <input type="radio" class="btn-check" name="denticao" id="dent-dec" value="deciduos">
+                      <label class="btn btn-outline-secondary" for="dent-dec">Decíduos</label>
+                      <input type="radio" class="btn-check" name="denticao" id="dent-mista" value="mista">
+                      <label class="btn btn-outline-secondary" for="dent-mista">Mista</label>
+                    </div>
+                    <span class="small text-body-secondary ms-auto" id="odonto-resumo"></span>
+                  </div>
+                  <div class="odontograma-wrap" id="odontograma"></div>
+                  <div class="odonto-legenda small mt-2" id="odonto-legenda"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-xl-4">
+              <div class="card odonto-painel" id="odonto-painel"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="painel-orcamentos" role="tabpanel" aria-labelledby="aba-orcamentos" tabindex="0">
+          <div class="d-flex align-items-center mb-3">
+            <p class="small text-body-secondary mb-0 me-auto">Envie o orçamento por WhatsApp. Quando o paciente aprovar, ele vira o plano de tratamento.</p>
+            <button type="button" class="btn btn-sm btn-primary" id="orc-novo"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Novo orçamento</button>
+          </div>
+          <div id="orc-lista" class="d-grid gap-3"></div>
+        </div>
+
+        <div class="tab-pane fade" id="painel-historico" role="tabpanel" aria-labelledby="aba-historico" tabindex="0">
+          <div id="pront-historico"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================= CADASTROS ============================ -->
     <section id="view-cadastros" class="view d-none">
       <div class="row g-3">
@@ -261,6 +339,7 @@
             <div id="agd-paciente-escolhido" class="d-none alert alert-secondary py-2 d-flex align-items-center gap-2 mb-0">
               <i class="bi bi-person-circle" aria-hidden="true"></i>
               <span class="me-auto" id="agd-paciente-nome"></span>
+              <button type="button" class="btn btn-sm btn-link p-0 me-2" id="agd-ficha">Abrir ficha</button>
               <button type="button" class="btn btn-sm btn-link p-0" id="agd-trocar-paciente">Trocar</button>
             </div>
             <div id="agd-paciente-busca">
@@ -405,10 +484,6 @@
               <textarea class="form-control" id="pac-obs" name="observacoes" rows="2" placeholder="Alergias, preferências..."></textarea>
             </div>
           </div>
-          <div id="pac-historico-wrap" class="d-none mt-4">
-            <h3 class="h6">Histórico de atendimentos</h3>
-            <div id="pac-historico" class="small"></div>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-danger me-auto d-none" id="pac-excluir"><i class="bi bi-trash me-1" aria-hidden="true"></i>Excluir</button>
@@ -527,6 +602,87 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================== MODAL: ORÇAMENTO ========================= -->
+  <div class="modal fade" id="modal-orcamento" tabindex="-1" aria-labelledby="modal-orcamento-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <form class="modal-content" id="form-orcamento" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="modal-orcamento-titulo">Orçamento</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label for="orc-profissional" class="form-label">Profissional responsável</label>
+              <select class="form-select" id="orc-profissional" name="profissional_id"></select>
+            </div>
+            <div class="col-md-3">
+              <label for="orc-validade" class="form-label">Válido até</label>
+              <input type="date" class="form-control" id="orc-validade" name="validade">
+              <div class="invalid-feedback" data-campo="validade"></div>
+            </div>
+            <div class="col-md-5">
+              <label for="orc-pagamento" class="form-label">Forma de pagamento</label>
+              <input type="text" class="form-control" id="orc-pagamento" name="forma_pagamento" maxlength="200" placeholder="Ex.: Pix à vista ou cartão em até 10x" list="formas-pagamento">
+              <datalist id="formas-pagamento">
+                <option value="Pix à vista com desconto"></option>
+                <option value="Cartão de crédito em até 10x"></option>
+                <option value="Entrada + parcelas no boleto"></option>
+                <option value="A combinar"></option>
+              </datalist>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle orc-tabela">
+              <thead>
+                <tr>
+                  <th scope="col" class="col-servico">Procedimento</th>
+                  <th scope="col" class="col-dente" data-so-odonto>Dente</th>
+                  <th scope="col" class="col-faces" data-so-odonto>Faces</th>
+                  <th scope="col" class="col-qtd">Qtd.</th>
+                  <th scope="col" class="col-valor">Valor unit.</th>
+                  <th scope="col" class="col-total text-end">Total</th>
+                  <th scope="col"><span class="visually-hidden">Remover</span></th>
+                </tr>
+              </thead>
+              <tbody id="orc-itens"></tbody>
+            </table>
+          </div>
+          <div class="invalid-feedback d-block" data-campo="itens"></div>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="orc-add-item"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Adicionar procedimento</button>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-7">
+              <label for="orc-obs" class="form-label">Observações para o paciente</label>
+              <textarea class="form-control" id="orc-obs" name="observacoes" rows="3" maxlength="1000"></textarea>
+            </div>
+            <div class="col-md-5">
+              <div class="orc-totais p-3 rounded border">
+                <div class="d-flex justify-content-between"><span>Subtotal</span><span id="orc-subtotal">R$ 0,00</span></div>
+                <div class="d-flex justify-content-between align-items-center my-2 gap-2">
+                  <label for="orc-desconto" class="mb-0">Desconto</label>
+                  <div class="input-group input-group-sm orc-desconto">
+                    <span class="input-group-text">R$</span>
+                    <input type="text" class="form-control text-end" id="orc-desconto" name="desconto" inputmode="decimal" placeholder="0,00">
+                    <div class="invalid-feedback" data-campo="desconto"></div>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-2"><span>Total</span><span id="orc-total">R$ 0,00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger me-auto d-none" id="orc-excluir"><i class="bi bi-trash me-1" aria-hidden="true"></i>Excluir</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-outline-primary" data-acao="salvar">Salvar</button>
+          <button type="submit" class="btn btn-primary" data-acao="enviar"><i class="bi bi-whatsapp me-1" aria-hidden="true"></i>Salvar e enviar</button>
         </div>
       </form>
     </div>

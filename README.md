@@ -6,7 +6,7 @@ HTML + Bootstrap 5 + JavaScript puro (ES Modules) + Supabase. Sem etapa de build
 > **Projeto separado do CRM WoodTec.** Repositório, projeto Supabase e projeto Vercel próprios.
 > Os dados das clínicas clientes nunca passam pelo banco do CRM.
 
-## O que já tem (fase 1)
+## O que já tem
 
 | Módulo | Conteúdo |
 |---|---|
@@ -17,12 +17,15 @@ HTML + Bootstrap 5 + JavaScript puro (ES Modules) + Supabase. Sem etapa de build
 | Equipe e serviços | Profissionais com grade semanal (com pausa) e serviços que atendem; serviços com duração e preço |
 | Clínica e site | Dados, cor do site, regras do agendamento online, link do site |
 | Site público | `site/?c=<slug>`: vitrine (serviços, equipe, contato, WhatsApp) + agendamento online em 4 passos ligado direto na agenda |
+| Ficha do paciente | `#paciente/<id>`: abas Odontograma (só clínicas de Odontologia), Orçamentos e tratamento, Atendimentos |
+| Odontograma | Permanentes, decíduos ou dentição mista; clique nas faces e marque cárie, restauração, canal, coroa, implante, ausente etc. Vermelho = tratar, azul = existente. Do dente direto para o orçamento |
+| Orçamentos | Itens com dente/faces, desconto, validade, forma de pagamento. Envio pelo WhatsApp com link; o paciente aprova pelo celular (`site/orcamento.html?t=<token>`) ou a clínica marca como aprovado |
+| Plano de tratamento | Orçamento aprovado vira checklist com progresso e data de cada procedimento feito |
 
 ## Próximas fases
 
 | Fase | Conteúdo |
 |---|---|
-| 2 | Odontograma e plano de tratamento por dente; orçamento com aceite do paciente |
 | 3 | Estética: fotos antes/depois, termos de consentimento, pacotes de sessões |
 | 4 | Financeiro: recebimentos, parcelas, comissão por profissional |
 | 5 | WhatsApp automático (lembrete na véspera), equipe com convites e papéis, domínio próprio por clínica |
@@ -85,16 +88,19 @@ O site de cada clínica fica em `https://SEU-APP.vercel.app/site/?c=<slug>`.
 index.html               login
 app.html                 sistema (agenda, pacientes, equipe e serviços, clínica e site)
 site/                    site público da clínica + agendamento online
+site/orcamento.html      orçamento público (ver, imprimir, aprovar)
 css/styles.css           visual do sistema
 js/config.example.js     modelo de credenciais (copie para config.js)
 js/constants.js          listas fixas (segmentos, status, origens...)
 js/validators.js         CPF, telefone, slug, datas, validação das entidades (puro)
 js/agenda-regras.js      cálculos da grade da agenda (puro)
 js/site-regras.js        fuso, dias, agrupamento de horários do site (puro)
+js/odonto-regras.js       dentes FDI, faces, odontograma, totais e validação do orçamento (puro)
 js/db.js                 consultas ao Supabase do sistema
 js/estado.js             clínica atual, serviços e profissionais em memória
 js/app.js                entrada do app.html: sessão, onboarding, menu
 js/agenda.js · pacientes.js · cadastros.js · config-clinica.js   telas
+js/prontuario.js · odontograma.js · orcamentos.js                ficha do paciente
 js/supabase.js · auth.js · ui.js                                 trazidos do CRM
 supabase/schema.sql      tabelas, RLS, funções do sistema e do site
 scripts/                 build da Vercel e servidor local
@@ -107,6 +113,8 @@ tests/                   testes das funções puras
   As FKs compostas `(clinica_id, id)` impedem apontar para paciente/profissional de outra clínica.
 - **Site público:** o visitante (anon) não lê nenhuma tabela. Só chama 3 funções:
   `site_clinica` (vitrine), `horarios_livres` e `agendar_online`. Nenhuma devolve dados de pacientes.
+- **Orçamento público:** `orcamento_publico` e `responder_orcamento` só funcionam com o token (UUID aleatório)
+  de um orçamento já enviado; mostram só o primeiro nome do paciente. Rascunho nunca aparece.
 - **Conflito de horário:** constraint `agendamentos_sem_conflito` (exclusion) impede dois atendimentos
   do mesmo profissional no mesmo horário, inclusive em agendamentos simultâneos pelo site.
 - **LGPD:** o agendamento online exige consentimento e grava `consentimento_lgpd_em` no paciente.

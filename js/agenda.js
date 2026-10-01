@@ -238,6 +238,12 @@ function prepararFormAgendamento() {
     if (b) escolherPaciente({ id: b.dataset.id, nome: b.dataset.nome });
   });
   document.getElementById('agd-trocar-paciente').addEventListener('click', () => escolherPaciente(null));
+  document.getElementById('agd-ficha').addEventListener('click', () => {
+    const id = f.paciente_id.value;
+    if (!id) return;
+    modalAg.hide();
+    location.hash = `#paciente/${id}`;
+  });
 
   f.servico_id.addEventListener('change', () => {
     const s = servicoPorId(f.servico_id.value);

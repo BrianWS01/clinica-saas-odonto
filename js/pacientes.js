@@ -1,9 +1,8 @@
 // Lista, busca e cadastro de pacientes.
-import { ORIGENS_PACIENTE, STATUS_AGENDAMENTO, INDICE_CPF } from './constants.js';
+import { ORIGENS_PACIENTE, INDICE_CPF } from './constants.js';
 import {
-  validarPaciente, formatarTelefone, formatarCpf, formatarDataBr, idade, linkWhatsapp, campoDoErro,
+  validarPaciente, formatarTelefone, formatarCpf, idade, linkWhatsapp, campoDoErro,
 } from './validators.js';
-import { deMinutos, minutosDoDia } from './agenda-regras.js';
 import { mensagemDeErro } from './supabase.js';
 import { toast, confirmar, estadoVazio, mostrarErros, limparValidacao, marcarInvalido, carregando, escapeHtml } from './ui.js';
 import * as db from './db.js';
@@ -14,6 +13,7 @@ const BUSCA_ESPERA_MS = 300;
 let el;
 let modal;
 let editando = null;
+let aoSalvar = null;
 let iniciado = false;
 
 export function iniciarPacientes() {
@@ -33,7 +33,7 @@ export function iniciarPacientes() {
     clearTimeout(timer);
     timer = setTimeout(carregar, BUSCA_ESPERA_MS);
   });
-  document.getElementById('pac-novo').addEventListener('click', () => abrir(null));
+  document.getElementById('pac-novo').addEventListener('click', () => editarPaciente(null));
   el.form.addEventListener('submit', salvar);
   el.excluir.addEventListener('click', excluir);
 }
@@ -61,7 +61,7 @@ function render(lista, termo) {
       ? { icone: 'bi-search', titulo: 'Nenhum paciente encontrado', texto: 'Confira o nome ou busque pelo telefone.' }
       : { icone: 'bi-people', titulo: 'Nenhum paciente ainda',
           texto: 'Cadastre aqui ou deixe que eles mesmos se cadastrem ao agendar pelo site.',
-          acoes: [{ texto: 'Novo paciente', icone: 'bi-plus-lg', onClick: () => abrir(null) }] });
+          acoes: [{ texto: 'Novo paciente', icone: 'bi-plus-lg', onClick: () => editarPaciente(null) }] });
     return;
   }
   el.lista.innerHTML = `
@@ -93,22 +93,19 @@ function render(lista, termo) {
 
   el.lista.querySelectorAll('tr[data-id]').forEach((tr) => tr.addEventListener('click', (ev) => {
     if (ev.target.closest('a')) return;
-    abrir(lista.find((p) => p.id === tr.dataset.id));
+    location.hash = `#paciente/${tr.dataset.id}`;
   }));
 }
 
-async function abrir(paciente) {
+/** Abre o cadastro (novo ou edição). aoSalvarFn(salvo) é chamado depois de gravar. */
+export function editarPaciente(paciente, aoSalvarFn = null) {
   const f = el.form;
   editando = paciente;
+  aoSalvar = aoSalvarFn;
   f.reset();
   limparValidacao(f);
   document.getElementById('modal-paciente-titulo').textContent = paciente ? paciente.nome : 'Novo paciente';
   el.excluir.classList.toggle('d-none', !paciente || !ehAdmin());
-
-  const wrap = document.getElementById('pac-historico-wrap');
-  const hist = document.getElementById('pac-historico');
-  wrap.classList.toggle('d-none', !paciente);
-  hist.innerHTML = '';
 
   if (paciente) {
     f.nome.value = paciente.nome;
@@ -120,25 +117,6 @@ async function abrir(paciente) {
     f.observacoes.value = paciente.observacoes ?? '';
   }
   modal.show();
-
-  if (paciente) {
-    hist.innerHTML = '<span class="text-body-secondary">Carregando...</span>';
-    try {
-      const itens = await db.historicoPaciente(estado.clinica.id, paciente.id);
-      hist.innerHTML = itens.length
-        ? `<ul class="list-group">${itens.map((a) => {
-            const st = STATUS_AGENDAMENTO[a.status];
-            return `<li class="list-group-item d-flex flex-wrap gap-2 align-items-center">
-              <span class="text-nowrap">${formatarDataBr(a.inicio)} ${deMinutos(minutosDoDia(a.inicio))}</span>
-              <span class="me-auto">${escapeHtml(a.servico?.nome ?? 'Atendimento')} · ${escapeHtml(a.profissional?.nome ?? '')}</span>
-              <span class="badge text-bg-${st.cor}">${st.rotulo}</span>
-            </li>`;
-          }).join('')}</ul>`
-        : '<span class="text-body-secondary">Nenhum atendimento ainda.</span>';
-    } catch (erro) {
-      hist.textContent = mensagemDeErro(erro, 'Histórico');
-    }
-  }
 }
 
 async function salvar(ev) {
@@ -152,10 +130,12 @@ async function salvar(ev) {
 
   const restaurar = carregando(f.querySelector('button[type="submit"]'));
   try {
-    await db.salvarPaciente(estado.clinica.id, editando?.id ?? null, dados);
+    const salvo = await db.salvarPaciente(estado.clinica.id, editando?.id ?? null, dados);
     modal.hide();
     toast(editando ? 'Paciente atualizado.' : 'Paciente cadastrado.', 'sucesso');
-    carregar();
+    if (aoSalvar) aoSalvar(salvo);
+    else if (!editando) location.hash = `#paciente/${salvo.id}`;
+    else carregar();
   } catch (erro) {
     if (campoDoErro(erro, { [INDICE_CPF]: 'cpf' })) marcarInvalido(f, 'cpf', 'Já existe um paciente com esse CPF.');
     else toast(mensagemDeErro(erro, 'Salvar paciente'), 'erro');
@@ -176,7 +156,8 @@ async function excluir() {
     await db.excluirPaciente(estado.clinica.id, editando.id);
     modal.hide();
     toast('Paciente excluído.', 'sucesso');
-    carregar();
+    if (location.hash !== '#pacientes') location.hash = '#pacientes';
+    else carregar();
   } catch (erro) {
     toast(mensagemDeErro(erro, 'Excluir paciente'), 'erro');
   }

@@ -320,3 +320,140 @@ body {
   background-color: var(--bs-primary);
   border-color: var(--bs-primary);
 }
+
+/* ---------------------------------------------------------------------
+   Odontograma
+   --------------------------------------------------------------------- */
+:root,
+[data-bs-theme="light"] {
+  --odonto-face: #ffffff;
+  --odonto-traco: #94a3b8;
+}
+[data-bs-theme="dark"] {
+  --odonto-face: #1f2530;
+  --odonto-traco: #5b6577;
+}
+
+.odontograma-wrap {
+  overflow-x: auto;
+}
+.odontograma {
+  display: block;
+  width: 100%;
+  min-width: 620px;
+  height: auto;
+  user-select: none;
+}
+.odonto-dente {
+  cursor: pointer;
+}
+.odonto-dente:focus {
+  outline: none;
+}
+.odonto-dente:focus-visible .odonto-coroa {
+  outline: 2px solid var(--bs-primary);
+}
+.odonto-face {
+  fill: var(--odonto-face);
+  stroke: var(--odonto-traco);
+  stroke-width: 1;
+  transition: fill 0.1s;
+}
+.odonto-dente:hover .odonto-face:not([style]) {
+  fill: color-mix(in srgb, var(--bs-primary) 10%, var(--odonto-face));
+}
+.odonto-face.selecionada {
+  stroke: var(--bs-primary);
+  stroke-width: 2.5;
+  fill: color-mix(in srgb, var(--bs-primary) 30%, var(--odonto-face));
+}
+.odonto-face.selecionada[style] {
+  fill-opacity: 0.7;
+}
+.odonto-dente.ausente .odonto-coroa {
+  opacity: 0.35;
+}
+.odonto-sel {
+  fill: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+  stroke: var(--bs-primary);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.odonto-x {
+  stroke-width: 3;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.odonto-anel {
+  fill: none;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+.odonto-num {
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--bs-body-color);
+}
+.odonto-dente.ativo .odonto-num {
+  fill: var(--bs-primary);
+}
+.odonto-sigla {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.odonto-linha {
+  stroke: var(--app-borda);
+  stroke-dasharray: 4 4;
+}
+.odonto-rotulo {
+  font-size: 9px;
+  fill: var(--bs-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.odonto-cor {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+.odonto-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  color: var(--bs-body-color);
+}
+.odonto-leg {
+  white-space: nowrap;
+}
+.odonto-cond {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+}
+.odonto-painel {
+  position: sticky;
+  top: 70px;
+}
+.orc-valor-rapido {
+  max-width: 90px;
+}
+
+/* ---------------------------------------------------------------------
+   Orçamento
+   --------------------------------------------------------------------- */
+.orc-tabela .col-servico { min-width: 240px; }
+.orc-tabela .col-dente { width: 80px; }
+.orc-tabela .col-faces { width: 80px; }
+.orc-tabela .col-qtd { width: 70px; }
+.orc-tabela .col-valor { width: 120px; }
+.orc-tabela .col-total { width: 110px; }
+.orc-desconto { max-width: 160px; }
+.orc-totais { background: var(--bs-tertiary-bg); }

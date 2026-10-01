@@ -272,3 +272,8 @@ section[id] { scroll-margin-top: 70px; }
   --bs-btn-color: var(--marca-escura);
   --bs-btn-hover-color: var(--marca);
 }
+
+@media print {
+  .agendador { box-shadow: none; border: 0; padding: 0; }
+  .whatsapp-flutuante { display: none !important; }
+}

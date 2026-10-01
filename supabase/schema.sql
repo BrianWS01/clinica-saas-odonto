@@ -292,6 +292,112 @@ drop trigger if exists agendamentos_atualizado_em on public.agendamentos;
 create trigger agendamentos_atualizado_em before update on public.agendamentos
   for each row execute function public.tg_set_atualizado_em();
 
+-- =====================================================================
+-- FASE 2: odontograma, orçamentos e plano de tratamento
+-- Dentes na numeração FDI: permanentes 11–48, decíduos 51–85.
+-- Faces: V (vestibular), L (lingual/palatina), M (mesial), D (distal), O (oclusal/incisal).
+-- =====================================================================
+
+create or replace function public.dente_valido(p_dente int)
+returns boolean
+language sql
+immutable
+set search_path = ''
+as $$
+  select p_dente is null
+      or (p_dente / 10 between 1 and 4 and p_dente % 10 between 1 and 8)
+      or (p_dente / 10 between 5 and 8 and p_dente % 10 between 1 and 5);
+$$;
+
+-- ---------------------------------------------------------------------
+-- odontograma_marcacoes: situação de cada dente/face do paciente
+-- ---------------------------------------------------------------------
+create table if not exists public.odontograma_marcacoes (
+  id              uuid primary key default gen_random_uuid(),
+  clinica_id      uuid not null references public.clinicas (id) on delete cascade,
+  paciente_id     uuid not null,
+  dente           int  not null,
+  faces           text[] not null default '{}',
+  condicao        text not null,
+  observacao      text,
+  profissional_id uuid,
+  registrado_por  uuid default auth.uid() references auth.users (id) on delete set null,
+  criado_em       timestamptz not null default now(),
+
+  foreign key (clinica_id, paciente_id)     references public.pacientes (clinica_id, id) on delete cascade,
+  foreign key (clinica_id, profissional_id) references public.profissionais (clinica_id, id),
+  constraint odonto_dente_valido    check (public.dente_valido(dente)),
+  constraint odonto_faces_validas   check (faces <@ array['V','L','M','D','O']::text[]),
+  constraint odonto_condicao_valida check (condicao in (
+    'carie','restauracao','restauracao_insatisfatoria','selante',
+    'ausente','extracao_indicada','canal_tratado','canal_indicado','coroa','implante','fratura'
+  ))
+);
+
+create index if not exists odonto_paciente_idx on public.odontograma_marcacoes (paciente_id, dente);
+
+-- ---------------------------------------------------------------------
+-- orcamentos + itens (o orçamento aprovado vira o plano de tratamento)
+-- ---------------------------------------------------------------------
+create table if not exists public.orcamentos (
+  id              uuid primary key default gen_random_uuid(),
+  clinica_id      uuid not null references public.clinicas (id) on delete cascade,
+  paciente_id     uuid not null,
+  profissional_id uuid,
+  status          text not null default 'rascunho',
+  desconto        numeric(10,2) not null default 0,
+  validade        date,
+  observacoes     text,
+  forma_pagamento text,
+  token_publico   uuid not null default gen_random_uuid(),
+  enviado_em      timestamptz,
+  respondido_em   timestamptz,
+  aprovado_nome   text,
+  criado_por      uuid default auth.uid() references auth.users (id) on delete set null,
+  criado_em       timestamptz not null default now(),
+  atualizado_em   timestamptz not null default now(),
+
+  foreign key (clinica_id, paciente_id)     references public.pacientes (clinica_id, id) on delete cascade,
+  foreign key (clinica_id, profissional_id) references public.profissionais (clinica_id, id),
+  constraint orcamentos_status_valido   check (status in ('rascunho','enviado','aprovado','recusado')),
+  constraint orcamentos_desconto_valido check (desconto >= 0),
+  constraint orcamentos_clinica_id_uniq unique (clinica_id, id)
+);
+
+create unique index if not exists orcamentos_token_uniq on public.orcamentos (token_publico);
+create index if not exists orcamentos_paciente_idx on public.orcamentos (paciente_id, criado_em desc);
+
+drop trigger if exists orcamentos_atualizado_em on public.orcamentos;
+create trigger orcamentos_atualizado_em before update on public.orcamentos
+  for each row execute function public.tg_set_atualizado_em();
+
+create table if not exists public.orcamento_itens (
+  id           uuid primary key default gen_random_uuid(),
+  clinica_id   uuid not null,
+  orcamento_id uuid not null,
+  servico_id   uuid,
+  descricao    text not null,
+  dente        int,
+  faces        text[] not null default '{}',
+  quantidade   int not null default 1,
+  valor        numeric(10,2) not null default 0,  -- valor unitário
+  ordem        int not null default 0,
+  status       text not null default 'pendente',
+  concluido_em timestamptz,
+  criado_em    timestamptz not null default now(),
+
+  foreign key (clinica_id, orcamento_id) references public.orcamentos (clinica_id, id) on delete cascade,
+  foreign key (clinica_id, servico_id)   references public.servicos (clinica_id, id),
+  constraint itens_descricao_preenchida check (length(btrim(descricao)) > 0),
+  constraint itens_dente_valido     check (public.dente_valido(dente)),
+  constraint itens_faces_validas    check (faces <@ array['V','L','M','D','O']::text[]),
+  constraint itens_quantidade_valida check (quantidade between 1 and 99),
+  constraint itens_valor_valido     check (valor >= 0),
+  constraint itens_status_valido    check (status in ('pendente','concluido'))
+);
+
+create index if not exists itens_orcamento_idx on public.orcamento_itens (orcamento_id, ordem);
+
 -- ---------------------------------------------------------------------
 -- RLS
 -- ---------------------------------------------------------------------
@@ -304,6 +410,9 @@ alter table public.horarios_trabalho     enable row level security;
 alter table public.bloqueios             enable row level security;
 alter table public.pacientes             enable row level security;
 alter table public.agendamentos          enable row level security;
+alter table public.odontograma_marcacoes enable row level security;
+alter table public.orcamentos            enable row level security;
+alter table public.orcamento_itens       enable row level security;
 
 -- clinicas: membro vê; dono/admin altera. Criação só pela função criar_clinica.
 drop policy if exists clinicas_select on public.clinicas;
@@ -325,7 +434,8 @@ declare
 begin
   foreach t in array array[
     'profissionais','servicos','profissional_servicos','horarios_trabalho',
-    'bloqueios','pacientes','agendamentos'
+    'bloqueios','pacientes','agendamentos',
+    'odontograma_marcacoes','orcamentos','orcamento_itens'
   ] loop
     execute format('drop policy if exists %I on public.%I', t || '_membro', t);
     execute format(
@@ -581,18 +691,100 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------
+-- Orçamento pelo link (anon): o paciente vê e aprova/recusa.
+-- O token é um UUID aleatório; rascunhos nunca aparecem.
+-- ---------------------------------------------------------------------
+create or replace function public.orcamento_publico(p_token uuid)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'status', o.status,
+    'criado_em', o.criado_em,
+    'validade', o.validade,
+    'vencido', o.status = 'enviado' and o.validade is not null
+               and o.validade < (now() at time zone c.fuso)::date,
+    'desconto', o.desconto,
+    'observacoes', o.observacoes,
+    'forma_pagamento', o.forma_pagamento,
+    'aprovado_nome', o.aprovado_nome,
+    'respondido_em', o.respondido_em,
+    'paciente', split_part(p.nome, ' ', 1),
+    'profissional', pr.nome,
+    'clinica', jsonb_build_object('nome', c.nome, 'whatsapp', c.whatsapp, 'telefone', c.telefone,
+                                  'cor_primaria', c.cor_primaria, 'cidade', c.cidade, 'uf', c.uf),
+    'itens', coalesce((
+      select jsonb_agg(jsonb_build_object(
+               'descricao', i.descricao, 'dente', i.dente, 'faces', i.faces,
+               'quantidade', i.quantidade, 'valor', i.valor)
+             order by i.ordem, i.criado_em)
+        from public.orcamento_itens i
+       where i.orcamento_id = o.id), '[]'::jsonb)
+  )
+  from public.orcamentos o
+  join public.clinicas c  on c.id = o.clinica_id
+  join public.pacientes p on p.id = o.paciente_id
+  left join public.profissionais pr on pr.id = o.profissional_id
+  where o.token_publico = p_token
+    and o.status <> 'rascunho';
+$$;
+
+create or replace function public.responder_orcamento(p_token uuid, p_aprovar boolean, p_nome text)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_orc  public.orcamentos;
+  v_fuso text;
+  v_nome text := btrim(coalesce(p_nome, ''));
+begin
+  select o.* into v_orc from public.orcamentos o
+   where o.token_publico = p_token for update;
+  if not found or v_orc.status = 'rascunho' then
+    raise exception 'Orçamento não encontrado' using errcode = 'P0002';
+  end if;
+  if v_orc.status <> 'enviado' then
+    raise exception 'Este orçamento já foi respondido' using errcode = 'P0001';
+  end if;
+
+  select fuso into v_fuso from public.clinicas where id = v_orc.clinica_id;
+  if v_orc.validade is not null and v_orc.validade < (now() at time zone v_fuso)::date then
+    raise exception 'Este orçamento venceu. Fale com a clínica para atualizar.' using errcode = 'P0001';
+  end if;
+  if p_aprovar and length(v_nome) < 3 then
+    raise exception 'Informe seu nome completo para aprovar' using errcode = '22023';
+  end if;
+
+  update public.orcamentos
+     set status = case when p_aprovar then 'aprovado' else 'recusado' end,
+         respondido_em = now(),
+         aprovado_nome = case when p_aprovar then v_nome else null end
+   where id = v_orc.id;
+
+  return case when p_aprovar then 'aprovado' else 'recusado' end;
+end;
+$$;
+
+-- ---------------------------------------------------------------------
 -- Permissões
 -- ---------------------------------------------------------------------
 revoke all on public.clinicas, public.membros, public.profissionais, public.servicos,
               public.profissional_servicos, public.horarios_trabalho, public.bloqueios,
-              public.pacientes, public.agendamentos
+              public.pacientes, public.agendamentos,
+              public.odontograma_marcacoes, public.orcamentos, public.orcamento_itens
   from anon;
 
 grant select, update on public.clinicas to authenticated;
 grant select         on public.membros  to authenticated;
 grant select, insert, update, delete
   on public.profissionais, public.servicos, public.profissional_servicos,
-     public.horarios_trabalho, public.bloqueios, public.pacientes, public.agendamentos
+     public.horarios_trabalho, public.bloqueios, public.pacientes, public.agendamentos,
+     public.odontograma_marcacoes, public.orcamentos, public.orcamento_itens
   to authenticated;
 
 revoke execute on function public.eh_membro(uuid)                    from public, anon;
@@ -609,3 +801,11 @@ revoke execute on function public.agendar_online(text, uuid, uuid, timestamptz, 
 grant  execute on function public.site_clinica(text)                                   to anon, authenticated;
 grant  execute on function public.horarios_livres(text, uuid, date, uuid)              to anon, authenticated;
 grant  execute on function public.agendar_online(text, uuid, uuid, timestamptz, text, text, boolean) to anon, authenticated;
+
+-- Fase 2
+revoke execute on function public.dente_valido(int)                                from public, anon;
+grant  execute on function public.dente_valido(int)                                to authenticated;
+revoke execute on function public.orcamento_publico(uuid)                          from public;
+revoke execute on function public.responder_orcamento(uuid, boolean, text)         from public;
+grant  execute on function public.orcamento_publico(uuid)                          to anon, authenticated;
+grant  execute on function public.responder_orcamento(uuid, boolean, text)         to anon, authenticated;
